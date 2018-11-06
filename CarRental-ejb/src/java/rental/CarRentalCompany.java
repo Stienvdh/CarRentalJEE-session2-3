@@ -1,5 +1,6 @@
 package rental;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
@@ -8,14 +9,17 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.persistence.Entity;
+import javax.persistence.*;
 
-public class CarRentalCompany {
+@Entity
+public class CarRentalCompany implements Serializable {
 
     private static Logger logger = Logger.getLogger(CarRentalCompany.class.getName());
-    private String name;
-    private List<Car> cars;
-    private Set<CarType> carTypes = new HashSet<CarType>();
-	private List<String> regions;
+    @Id private String name;
+    @OneToMany private List<Car> cars;
+    @OneToMany private Set<CarType> carTypes = new HashSet<CarType>();
+    private List<String> regions;
 
 	
     /***************
@@ -109,7 +113,7 @@ public class CarRentalCompany {
         return out;
     }
     
-     public Set<Car> getCars(String type) {
+    public Set<Car> getCars(String type) {
         Set<Car> out = new HashSet<Car>();
         for (Car car : cars) {
             if (type.equals(car.getType().getName())) {
