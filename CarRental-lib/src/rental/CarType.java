@@ -1,10 +1,12 @@
 package rental;
 
 import java.io.Serializable;
+import javax.persistence.*;
 
+@Entity
 public class CarType implements Serializable{
     
-    private String name;
+    @Id private String name;
     private int nbOfSeats;
     private boolean smokingAllowed;
     private double rentalPricePerDay;
