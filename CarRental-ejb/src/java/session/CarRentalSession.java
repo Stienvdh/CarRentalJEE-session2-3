@@ -28,7 +28,7 @@ public class CarRentalSession implements CarRentalSessionRemote {
 
     @Override
     public Set<String> getAllRentalCompanies() {
-        List<String> resultList = this.em.createNamedQuery("allRentalCompanyNames").getResultList();
+        List<String> resultList = this.em.createNamedQuery("getAllRentalCompanyNames").getResultList();
         if (resultList == null)
             return new HashSet<String>();
         return new HashSet<String>(resultList);
@@ -36,7 +36,7 @@ public class CarRentalSession implements CarRentalSessionRemote {
     
     @Override
     public List<CarType> getAvailableCarTypes(Date start, Date end) {
-        List<CarRentalCompany> resultList = this.em.createNamedQuery("allRentalCompanies").getResultList();
+        List<CarRentalCompany> resultList = this.em.createNamedQuery("getAllRentalCompanies").getResultList();
         List<CarType> availableCarTypes = new LinkedList<CarType>();
         if(resultList == null) {
             resultList = new ArrayList<CarRentalCompany>();

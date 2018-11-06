@@ -12,6 +12,74 @@ import java.util.logging.Logger;
 import javax.persistence.Entity;
 import javax.persistence.*;
 
+@NamedQueries({
+    
+@NamedQuery(
+    name = "getAllRentalCompanies",
+    query= "SELECT company FROM CarRentalCompany company"
+),
+    
+@NamedQuery(
+    name = "getAllRentalCompanyNames",
+    query= "SELECT company.name FROM CarRentalCompany company"
+),
+    
+@NamedQuery(
+    name = "allCarTypesOfCompany",
+    query= "SELECT DISTINCT car.type FROM Car car, CarRentalCompany company "
+        + "WHERE car MEMBER OF company.cars "
+        + "AND company.name = :companyName"
+),
+
+@NamedQuery(
+    name = "allCarIds",
+    query= "SELECT car.id FROM Car car, CarRentalCompany company "
+        + "WHERE company.name = :companyName "
+        + "AND car MEMBER OF company.cars"
+),
+
+@NamedQuery(
+    name = "allCarIdsOfType",
+    query= "SELECT car.id FROM Car car, CarRentalCompany company "
+        + "WHERE company.name = :companyName "
+        + "AND car MEMBER OF company.cars "
+        + "AND car.type.name = :carTypeName"
+),
+
+@NamedQuery(
+    name = "allReservationsForCarId",
+    query= "SELECT reservation FROM Reservation reservation, CarRentalCompany company, Car car "
+        + "WHERE company.name = :companyName "
+        + "AND car.id = :carId "
+        + "AND reservation MEMBER OF car.reservations"
+),
+
+@NamedQuery(
+    name = "allReservationsForCarType",
+    query= "SELECT reservation FROM Reservation reservation, Car car "
+        + "WHERE reservation.rentalCompany = :companyName "
+        + "AND car.type.name = :carTypeName "
+        + "AND reservation MEMBER OF car.reservations"
+),
+
+@NamedQuery(
+    name = "mostPopularCarRentalCompanies",
+    query= "SELECT company.name, COUNT(reservation) AS total FROM CarRentalCompany company, Reservation reservation "
+        + "WHERE reservation.rentalCompany = company.name "
+        + "GROUP BY company.name "
+        + "ORDER BY total DESC"
+),
+
+@NamedQuery(
+    name = "mostPopularCarTypeOfCompany",
+    query= "SELECT carType, COUNT(carType) AS total FROM Reservation reservation, CarType carType "
+        + "WHERE reservation.rentalCompany = :companyName "
+            +"AND carType.companyName = :companyName "
+        + "GROUP BY carType "
+        + "ORDER BY total DESC"
+)
+})
+
 @Entity
 public class CarRentalCompany implements Serializable {
 
