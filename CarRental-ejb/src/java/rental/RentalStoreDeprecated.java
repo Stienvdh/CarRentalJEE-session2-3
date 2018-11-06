@@ -12,7 +12,7 @@ import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class RentalStore {
+public class RentalStoreDeprecated {
 
     private static Map<String, CarRentalCompany> rentals;
 

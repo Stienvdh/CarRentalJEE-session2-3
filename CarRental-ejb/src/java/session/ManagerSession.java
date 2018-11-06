@@ -5,14 +5,18 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.ejb.Stateless;
+import javax.persistence.*;
 import rental.Car;
 import rental.CarRentalCompany;
 import rental.CarType;
-import rental.RentalStore;
+//import rental.RentalStore;
 import rental.Reservation;
 
 @Stateless
 public class ManagerSession implements ManagerSessionRemote {
+    
+    @PersistenceContext
+    EntityManager manager;
     
     @Override
     public Set<CarType> getCarTypes(String company) {
