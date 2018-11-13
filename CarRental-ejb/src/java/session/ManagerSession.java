@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Set;
 import javax.ejb.Stateless;
 import javax.persistence.*;
+import rental.Car;
+import rental.CarRentalCompany;
 import rental.CarType;
 import rental.Reservation;
 import rental.ReservationConstraints;

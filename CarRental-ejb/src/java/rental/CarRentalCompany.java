@@ -68,31 +68,31 @@ import javax.persistence.*;
 
 @NamedQuery(
     name = "getBestClients",
-    query = "SELECT reservation.user, COUNT(reservation) AS total FROM CarRentalCompany company, Reservation reservation "
+    query = "SELECT reservation.carRenter, COUNT(reservation) AS total FROM CarRentalCompany company, Reservation reservation "
         + "WHERE reservation.rentalCompany = company.name "
-        + "GROUP BY reservation.user "
+        + "GROUP BY reservation.carRenter "
         + "ORDER BY total DESC"
 ),
 
-@NamedQuery(
-    name = "getMostPopularCarTypeOfCompany",
-    query= "SELECT carType, COUNT(carType) AS total FROM Reservation reservation, CarType carType "
-        + "WHERE reservation.rentalCompany = :companyName "
-            +"AND carType.companyName = :companyName "
-            +"AND reservation.getStartDate >= :year+'0101'"
-            +"AND reservation.getStartDate <= :year+'1231'"
-        + "GROUP BY carType "
-        + "ORDER BY total DESC"
-),
+//@NamedQuery(
+//    name = "getMostPopularCarTypeOfCompany",
+//    query= "SELECT carType, COUNT(carType) AS total FROM Reservation reservation, CarType carType "
+//        + "WHERE reservation.rentalCompany = :companyName "
+//            +"AND carType.companyName = :companyName "
+//            +"AND reservation.getStartDate >= :year+'0101'"
+//            +"AND reservation.getStartDate <= :year+'1231'"
+//        + "GROUP BY carType "
+//        + "ORDER BY total DESC"
+//),
 
-@NamedQuery(
-     name = "getCheapestCarType",
-     query = "SELECT carType, MIN(car.type.rentalPricePerDay) AS price FROM CarRentalCompany company, Car car, CarType carType "
-        + "WHERE car.isAvailable(:startDate,:endDate) "
-        + "AND company.regions.contains(:region) "
-        + "GROUP BY carType "
-        + "ORDER BY price ASC"
-)
+//@NamedQuery(
+//     name = "getCheapestCarType",
+//     query = "SELECT carType, MIN(car.type.rentalPricePerDay) AS price FROM CarRentalCompany company, Car car, CarType carType "
+//        + "WHERE car.isAvailable(:startDate,:endDate) "
+//        + "AND company.regions.contains(:region) "
+//        + "GROUP BY carType "
+//        + "ORDER BY price ASC"
+//)
 })
 
 @Entity
@@ -108,6 +108,8 @@ public class CarRentalCompany implements Serializable {
      * CONSTRUCTOR *
      ***************/
 
+    public CarRentalCompany(){};
+    
     public CarRentalCompany(String name, List<String> regions, List<Car> cars) {
         logger.log(Level.INFO, "<{0}> Starting up CRC {0} ...", name);
         setName(name);

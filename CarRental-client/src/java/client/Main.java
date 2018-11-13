@@ -3,6 +3,7 @@ package client;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedList;
@@ -10,10 +11,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
 import rental.CarType;
-import rental.Reservation;
 import session.CarRentalSessionRemote;
 import session.ManagerSessionRemote;
 import javax.naming.InitialContext;
+import rental.Reservation;
 
 public class Main extends AbstractTestManagement<CarRentalSessionRemote, ManagerSessionRemote> {
 
@@ -51,12 +52,12 @@ public class Main extends AbstractTestManagement<CarRentalSessionRemote, Manager
         int nextuid = 0;
        
         //open file from jar
-        BufferedReader in = new BufferedReader(new FileReader(datafile));
+        BufferedReader in = new BufferedReader(new InputStreamReader(Main.class.getClassLoader().getResourceAsStream(datafile)));
         
         try {
             while (in.ready()) {
                 String line = in.readLine();
-                
+
                 if (line.startsWith("#")) {
                     // comment -> skip					
                 } else if (line.startsWith("-")) {
