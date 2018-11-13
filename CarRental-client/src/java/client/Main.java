@@ -3,21 +3,17 @@ package client;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.naming.InitialContext;
 import rental.CarType;
 import rental.Reservation;
-import rental.ReservationConstraints;
 import session.CarRentalSessionRemote;
 import session.ManagerSessionRemote;
+import javax.naming.InitialContext;
 
 public class Main extends AbstractTestManagement<CarRentalSessionRemote, ManagerSessionRemote> {
 
@@ -38,7 +34,7 @@ public class Main extends AbstractTestManagement<CarRentalSessionRemote, Manager
         client.run();
     }
     
-    public static CrcData loadRental(String datafile) {
+    private static CrcData loadRental(String datafile) {
         try {
             return loadData(datafile);
         } 
@@ -47,7 +43,7 @@ public class Main extends AbstractTestManagement<CarRentalSessionRemote, Manager
         return null;
     }
 
-    public static CrcData loadData(String datafile)
+    private static CrcData loadData(String datafile)
             throws NumberFormatException, IOException {
 
         CrcData out = new CrcData();
@@ -111,12 +107,19 @@ public class Main extends AbstractTestManagement<CarRentalSessionRemote, Manager
 
     @Override
     protected CarRentalSessionRemote getNewReservationSession(String name) throws Exception {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        InitialContext context = new InitialContext();
+        CarRentalSessionRemote session = (CarRentalSessionRemote) context.lookup(CarRentalSessionRemote.class.getName());
+        session.setRenterName(name);
+        return session;
     }
 
     @Override
     protected ManagerSessionRemote getNewManagerSession(String name, String carRentalName) throws Exception {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        InitialContext context = new InitialContext();
+        ManagerSessionRemote session = (ManagerSessionRemote) context.lookup(ManagerSessionRemote.class.getName());
+        session.setManagerName(name);
+        session.setCrcName(carRentalName);
+        return session;
     }
 
     @Override

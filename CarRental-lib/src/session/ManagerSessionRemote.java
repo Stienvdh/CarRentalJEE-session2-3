@@ -5,7 +5,6 @@ import java.util.Set;
 import javax.ejb.Remote;
 import rental.CarType;
 import rental.Reservation;
-import rental.Car;
 
 @Remote
 public interface ManagerSessionRemote {
@@ -19,4 +18,8 @@ public interface ManagerSessionRemote {
     public int getNumberOfReservations(String company, String type);
     
     public void addCarRentalCompany(String name, List<Object[]> cars, List<String> regions);
+    
+    public void setCrcName(String name);
+    
+    public void setManagerName(String name);
 }

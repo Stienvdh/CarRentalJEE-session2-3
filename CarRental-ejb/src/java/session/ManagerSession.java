@@ -19,6 +19,19 @@ public class ManagerSession implements ManagerSessionRemote {
     @PersistenceContext
     EntityManager manager;
     
+    private String managerName;
+    private String crcName;
+    
+    @Override
+    public void setManagerName(String name) {
+        this.managerName = name;
+    }
+    
+    @Override
+    public void setCrcName(String name) {
+        this.crcName = name;
+    }
+    
     @Override
     public Set<CarType> getCarTypes(String company) {
         try {
