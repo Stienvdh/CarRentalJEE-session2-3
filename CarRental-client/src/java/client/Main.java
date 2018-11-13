@@ -1,14 +1,19 @@
 package client;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import javax.naming.InitialContext;
+import java.util.StringTokenizer;
 import rental.CarType;
 import rental.Reservation;
-import rental.ReservationConstraints;
 import session.CarRentalSessionRemote;
 import session.ManagerSessionRemote;
+import javax.naming.InitialContext;
 
 public class Main extends AbstractTestManagement<CarRentalSessionRemote, ManagerSessionRemote> {
 
@@ -17,8 +22,72 @@ public class Main extends AbstractTestManagement<CarRentalSessionRemote, Manager
     }
 
     public static void main(String[] args) throws Exception {
-        // TODO: use updated manager interface to load cars into companies
-        new Main("trips").run();
+        CrcData hertzData = loadRental("hertz.csv");
+        CrcData dockxData = loadRental("dockx.csv");
+        
+        Main client = new Main("trips");
+        
+        ManagerSessionRemote managerSession = client.getNewManagerSession("init", "init");
+        managerSession.addCarRentalCompany(hertzData.name,hertzData.cars,hertzData.regions);
+        managerSession.addCarRentalCompany(dockxData.name,dockxData.cars,dockxData.regions);
+        
+        client.run();
+    }
+    
+    private static CrcData loadRental(String datafile) {
+        try {
+            return loadData(datafile);
+        } 
+        catch (NumberFormatException | IOException ex) {
+        }
+        return null;
+    }
+
+    private static CrcData loadData(String datafile)
+            throws NumberFormatException, IOException {
+
+        CrcData out = new CrcData();
+        StringTokenizer csvReader;
+        int nextuid = 0;
+       
+        //open file from jar
+        BufferedReader in = new BufferedReader(new FileReader(datafile));
+        
+        try {
+            while (in.ready()) {
+                String line = in.readLine();
+                
+                if (line.startsWith("#")) {
+                    // comment -> skip					
+                } else if (line.startsWith("-")) {
+                    csvReader = new StringTokenizer(line.substring(1), ",");
+                    out.name = csvReader.nextToken();
+                    out.regions = Arrays.asList(csvReader.nextToken().split(":"));
+                } else {
+                    csvReader = new StringTokenizer(line, ",");
+                    //create new car type from first 5 fields
+                    CarType type = new CarType(csvReader.nextToken(),
+                            Integer.parseInt(csvReader.nextToken()),
+                            Float.parseFloat(csvReader.nextToken()),
+                            Double.parseDouble(csvReader.nextToken()),
+                            Boolean.parseBoolean(csvReader.nextToken()));
+                    //create N new cars with given type, where N is the 5th field
+                    for (int i = Integer.parseInt(csvReader.nextToken()); i > 0; i--) {
+                        out.cars.add(new Object[]{nextuid++, type});
+                    }        
+                }
+            } 
+        } finally {
+            in.close();
+        }
+
+        return out;
+    }
+    
+    static class CrcData {
+            public List<Object[]> cars = new LinkedList<Object[]>();
+            public String name;
+            public List<String> regions =  new LinkedList<String>();
     }
 
     @Override
@@ -38,12 +107,19 @@ public class Main extends AbstractTestManagement<CarRentalSessionRemote, Manager
 
     @Override
     protected CarRentalSessionRemote getNewReservationSession(String name) throws Exception {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        InitialContext context = new InitialContext();
+        CarRentalSessionRemote session = (CarRentalSessionRemote) context.lookup(CarRentalSessionRemote.class.getName());
+        session.setRenterName(name);
+        return session;
     }
 
     @Override
     protected ManagerSessionRemote getNewManagerSession(String name, String carRentalName) throws Exception {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        InitialContext context = new InitialContext();
+        ManagerSessionRemote session = (ManagerSessionRemote) context.lookup(ManagerSessionRemote.class.getName());
+        session.setManagerName(name);
+        session.setCrcName(carRentalName);
+        return session;
     }
 
     @Override

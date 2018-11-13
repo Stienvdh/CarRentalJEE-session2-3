@@ -1,12 +1,12 @@
 package session;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.ejb.Stateless;
 import javax.persistence.*;
 import rental.CarType;
-//import rental.RentalStore;
 import rental.Reservation;
 import rental.ReservationConstraints;
 
@@ -15,6 +15,19 @@ public class ManagerSession implements ManagerSessionRemote {
     
     @PersistenceContext
     EntityManager manager;
+    
+    private String managerName;
+    private String crcName;
+    
+    @Override
+    public void setManagerName(String name) {
+        this.managerName = name;
+    }
+    
+    @Override
+    public void setCrcName(String name) {
+        this.crcName = name;
+    }
     
     @Override
     public Set<String> getAllRentalCompanies() {
@@ -99,6 +112,29 @@ public class ManagerSession implements ManagerSessionRemote {
         if (resultList == null)
             throw new IllegalStateException("No carTypes");
         return resultList.get(0);
+    }
+    
+    @Override
+    public void addCarRentalCompany(String name, List<Object[]> cars, List<String> regions) {
+        List<Car> carsList = new ArrayList<Car>();
+        
+        for (Object[] arr : cars) {
+            Car newCar = new Car((Integer)arr[0],(CarType)arr[1]);
+            carsList.add(newCar);
+        }
+        
+        CarRentalCompany company = new CarRentalCompany(name, regions, carsList);
+        List<Car> carsToCopy = company.popAllCars();
+        manager.persist(company);
+        CarRentalCompany companyEntry = manager.find(CarRentalCompany.class, company.getName());
+        
+        for (Car car : carsToCopy) {
+            CarType type = manager.find(CarType.class,car.getType().getName());
+            if (type != null) {
+                car.setType(type);
+            }
+            companyEntry.addCar(car);
+        }
     }
 
 }

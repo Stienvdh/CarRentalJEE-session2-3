@@ -10,8 +10,8 @@ import javax.persistence.*;
 public class Car implements Serializable {
 
     @Id private int id;
-    @OneToOne private CarType type;
-    @OneToMany private Set<Reservation> reservations;
+    @ManyToOne(cascade=CascadeType.ALL) private CarType type;
+    @OneToMany(cascade=CascadeType.ALL) private Set<Reservation> reservations;
 
     /***************
      * CONSTRUCTOR *
