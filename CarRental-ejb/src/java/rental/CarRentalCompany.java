@@ -101,7 +101,7 @@ public class CarRentalCompany implements Serializable {
     private static Logger logger = Logger.getLogger(CarRentalCompany.class.getName());
     @Id private String name;
     @OneToMany(cascade=CascadeType.ALL) private List<Car> cars;
-    @ManyToMany private Set<CarType> carTypes = new HashSet<CarType>();
+    @ManyToMany(cascade=CascadeType.ALL) private Set<CarType> carTypes = new HashSet<CarType>();
     private List<String> regions;
 	
     /***************
@@ -115,9 +115,6 @@ public class CarRentalCompany implements Serializable {
         setName(name);
         this.cars = cars;
         setRegions(regions);
-        for (Car car : cars) {
-            carTypes.add(car.getType());
-        }
     }
 
     /********
@@ -172,6 +169,10 @@ public class CarRentalCompany implements Serializable {
             }
         }
         return availableCarTypes;
+    }
+    
+    public void addCarType(CarType type) {
+        this.carTypes.add(type);
     }
 
     /*********

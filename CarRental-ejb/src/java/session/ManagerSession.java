@@ -135,6 +135,9 @@ public class ManagerSession implements ManagerSessionRemote {
             if (type != null) {
                 car.setType(type);
             }
+            else {
+                company.addCarType(type);
+            }
             companyEntry.addCar(car);
         }
     }

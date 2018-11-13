@@ -9,7 +9,9 @@ import javax.persistence.Id;
 public class Quote implements Serializable {
 
     @Id @GeneratedValue
+    @Temporal(javax.persistence.TemporalType.DATE)
     private Date startDate;
+    @Temporal(javax.persistence.TemporalType.DATE)
     private Date endDate;
     private String carRenter;
     private String rentalCompany;

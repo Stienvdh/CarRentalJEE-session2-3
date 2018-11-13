@@ -2,3 +2,10 @@
 /CarRental-client/nbproject/private/
 /CarRental-ejb/nbproject/private/
 /CarRental-lib/nbproject/private/
+/CarRental-lib/build/
+/CarRental-lib/dist/
+/CarRental/build/
+/CarRental-ejb/dist/
+/CarRental/dist/
+/CarRental-client/build/
+/CarRental-client/dist/
