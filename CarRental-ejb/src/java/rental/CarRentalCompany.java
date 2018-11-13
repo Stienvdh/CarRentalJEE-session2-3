@@ -25,29 +25,32 @@ import javax.persistence.*;
 ),
     
 @NamedQuery(
-    name = "allCarTypesOfCompany",
+    name = "getAllCarTypesOfCompany",
     query= "SELECT DISTINCT car.type FROM Car car, CarRentalCompany company "
         + "WHERE car MEMBER OF company.cars "
         + "AND company.name = :companyName"
 ),
 
+// TODO er stond zo'n methode provided maar is dit nog nodig?
 @NamedQuery(
-    name = "allCarIds",
+    name = "getAllCarIds",
     query= "SELECT car.id FROM Car car, CarRentalCompany company "
         + "WHERE company.name = :companyName "
         + "AND car MEMBER OF company.cars"
 ),
 
+//TODO nergens gebruikt
 @NamedQuery(
-    name = "allCarIdsOfType",
+    name = "getAllCarIdsOfType",
     query= "SELECT car.id FROM Car car, CarRentalCompany company "
         + "WHERE company.name = :companyName "
         + "AND car MEMBER OF company.cars "
         + "AND car.type.name = :carTypeName"
 ),
 
+// TODO er stond zo'n methode provided maar is dit nog nodig?
 @NamedQuery(
-    name = "allReservationsForCarId",
+    name = "getAllReservationsForCarId",
     query= "SELECT reservation FROM Reservation reservation, CarRentalCompany company, Car car "
         + "WHERE company.name = :companyName "
         + "AND car.id = :carId "
@@ -55,7 +58,7 @@ import javax.persistence.*;
 ),
 
 @NamedQuery(
-    name = "allReservationsForCarType",
+    name = "getAllReservationsForCarType",
     query= "SELECT reservation FROM Reservation reservation, Car car "
         + "WHERE reservation.rentalCompany = :companyName "
         + "AND car.type.name = :carTypeName "
@@ -63,20 +66,31 @@ import javax.persistence.*;
 ),
 
 @NamedQuery(
-    name = "mostPopularCarRentalCompanies",
-    query= "SELECT company.name, COUNT(reservation) AS total FROM CarRentalCompany company, Reservation reservation "
+    name = "getBestClients",
+    query = "SELECT reservation.user, COUNT(reservation) AS total FROM CarRentalCompany company, Reservation reservation "
         + "WHERE reservation.rentalCompany = company.name "
-        + "GROUP BY company.name "
+        + "GROUP BY reservation.user "
         + "ORDER BY total DESC"
 ),
 
 @NamedQuery(
-    name = "mostPopularCarTypeOfCompany",
+    name = "getMostPopularCarTypeOfCompany",
     query= "SELECT carType, COUNT(carType) AS total FROM Reservation reservation, CarType carType "
         + "WHERE reservation.rentalCompany = :companyName "
             +"AND carType.companyName = :companyName "
+            +"AND reservation.getStartDate >= :year+'0101'"
+            +"AND reservation.getStartDate <= :year+'1231'"
         + "GROUP BY carType "
         + "ORDER BY total DESC"
+),
+
+@NamedQuery(
+     name = "getCheapestCarType",
+     query = "SELECT carType, MIN(car.type.rentalPricePerDay) AS price FROM CarRentalCompany company, Car car, CarType carType "
+        + "WHERE car.isAvailable(:startDate,:endDate) "
+        + "AND company.regions.contains(:region) "
+        + "GROUP BY carType "
+        + "ORDER BY price ASC"
 )
 })
 

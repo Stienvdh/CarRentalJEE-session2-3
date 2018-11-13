@@ -1,16 +1,14 @@
 package session;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.ejb.Stateless;
 import javax.persistence.*;
-import rental.Car;
-import rental.CarRentalCompany;
 import rental.CarType;
 //import rental.RentalStore;
 import rental.Reservation;
+import rental.ReservationConstraints;
 
 @Stateless
 public class ManagerSession implements ManagerSessionRemote {
@@ -19,51 +17,88 @@ public class ManagerSession implements ManagerSessionRemote {
     EntityManager manager;
     
     @Override
+    public Set<String> getAllRentalCompanies() {
+        List<String> resultList = this.manager.createNamedQuery("getAllRentalCompanyNames").getResultList();
+        if (resultList == null)
+            return new HashSet<String>();
+        return new HashSet<String>(resultList);
+    }
+    
+    @Override
     public Set<CarType> getCarTypes(String company) {
-        try {
-            return new HashSet<CarType>(RentalStore.getRental(company).getAllTypes());
-        } catch (IllegalArgumentException ex) {
-            Logger.getLogger(ManagerSession.class.getName()).log(Level.SEVERE, null, ex);
-            return null;
-        }
+        List<CarType> resultList = this.manager.createNamedQuery("getAllCarTypesOfCompany")
+                .setParameter("companyName", company)
+                .getResultList();
+        if (resultList == null)
+            return new HashSet<CarType>();
+        return new HashSet<CarType>(resultList);
     }
 
     @Override
     public Set<Integer> getCarIds(String company, String type) {
-        Set<Integer> out = new HashSet<Integer>();
-        try {
-            for(Car c: RentalStore.getRental(company).getCars(type)){
-                out.add(c.getId());
-            }
-        } catch (IllegalArgumentException ex) {
-            Logger.getLogger(ManagerSession.class.getName()).log(Level.SEVERE, null, ex);
-            return null;
-        }
-        return out;
+        List<Integer> resultList = this.manager.createNamedQuery("getAllCarIds").getResultList();
+        if (resultList == null)
+            return new HashSet<Integer>();
+        return new HashSet<Integer>(resultList);
     }
 
     @Override
     public int getNumberOfReservations(String company, String type, int id) {
-        try {
-            return RentalStore.getRental(company).getCar(id).getReservations().size();
-        } catch (IllegalArgumentException ex) {
-            Logger.getLogger(ManagerSession.class.getName()).log(Level.SEVERE, null, ex);
+        List<Reservation> resultList = this.manager.createNamedQuery("getAllReservationsForCarId")
+                .setParameter("companyName", company)
+                .setParameter("carId", id)
+                .getResultList();
+        if (resultList == null) 
             return 0;
-        }
+        return resultList.size();
     }
 
     @Override
     public int getNumberOfReservations(String company, String type) {
-        Set<Reservation> out = new HashSet<Reservation>();
-        try {
-            for(Car c: RentalStore.getRental(company).getCars(type)){
-                out.addAll(c.getReservations());
-            }
-        } catch (IllegalArgumentException ex) {
-            Logger.getLogger(ManagerSession.class.getName()).log(Level.SEVERE, null, ex);
+        List<Reservation> resultList = this.manager.createNamedQuery("getAllReservationsForCarType")
+                .setParameter("companyName", company)
+                .setParameter("carTypeName", type)
+                .getResultList();
+        if (resultList == null)
             return 0;
+        return resultList.size();
+    }
+    
+    @Override
+    public Set<String> getBestClients() {
+        List<Object[]> resultList = this.manager.createNamedQuery("getBestClients").getResultList();
+        if (resultList == null)
+            return new HashSet<String>();
+        Set<String> resultSet = new HashSet<String>();
+        int bestValue = (Integer) resultList.get(0)[1];
+        for (Object[] obj : resultList) {
+            if ((Integer)  resultList.get(0)[1] == bestValue) {
+                resultSet.add((String)obj[0]);
+            } 
         }
-        return out.size();
+        return resultSet;
+    }
+    
+    @Override
+    public CarType getMostPopularCarTypeOfCompany(String company, String year) {
+        List<CarType> resultList = this.manager.createNamedQuery("getMostPopularCarTypeOfCompany")
+                .setParameter("companyName", company)
+                .setParameter("year", year)
+                .getResultList();
+        if (resultList == null)
+            throw new IllegalStateException("No carTypes at company " + company);
+        return resultList.get(0);
+    }
+    
+    public CarType getCheapestCarType(ReservationConstraints constraints) {
+        List<CarType> resultList = this.manager.createNamedQuery("getCheapestCarType")
+                .setParameter("startDate", constraints.getStartDate())
+                .setParameter("endDate", constraints.getEndDate())
+                .setParameter("region", constraints.getRegion())
+                .getResultList();
+        if (resultList == null)
+            throw new IllegalStateException("No carTypes");
+        return resultList.get(0);
     }
 
 }
