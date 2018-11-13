@@ -1,5 +1,6 @@
 package session;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -10,7 +11,6 @@ import javax.persistence.*;
 import rental.Car;
 import rental.CarRentalCompany;
 import rental.CarType;
-//import rental.RentalStore;
 import rental.Reservation;
 
 @Stateless
@@ -68,8 +68,15 @@ public class ManagerSession implements ManagerSessionRemote {
     }
     
     @Override
-    public void addCarRentalCompany(String name, List<Car> cars, List<String> regions) {
-        CarRentalCompany company = new CarRentalCompany(name, regions, cars);
+    public void addCarRentalCompany(String name, List<Object[]> cars, List<String> regions) {
+        List<Car> carsList = new ArrayList<Car>();
+        
+        for (Object[] arr : cars) {
+            Car newCar = new Car((Integer)arr[0],(CarType)arr[1]);
+            carsList.add(newCar);
+        }
+        
+        CarRentalCompany company = new CarRentalCompany(name, regions, carsList);
         List<Car> carsToCopy = company.popAllCars();
         manager.persist(company);
         CarRentalCompany companyEntry = manager.find(CarRentalCompany.class, company.getName());

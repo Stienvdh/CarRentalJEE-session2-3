@@ -18,5 +18,5 @@ public interface ManagerSessionRemote {
     
     public int getNumberOfReservations(String company, String type);
     
-    public void addCarRentalCompany(String name, List<Car> cars, List<String> regions);
+    public void addCarRentalCompany(String name, List<Object[]> cars, List<String> regions);
 }
