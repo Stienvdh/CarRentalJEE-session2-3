@@ -1,6 +1,7 @@
 package rental;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
@@ -86,8 +87,8 @@ public class CarRentalCompany implements Serializable {
 
     private static Logger logger = Logger.getLogger(CarRentalCompany.class.getName());
     @Id private String name;
-    @OneToMany private List<Car> cars;
-    @OneToMany private Set<CarType> carTypes = new HashSet<CarType>();
+    @OneToMany(cascade=CascadeType.ALL) private List<Car> cars;
+    @ManyToMany private Set<CarType> carTypes = new HashSet<CarType>();
     private List<String> regions;
 	
     /***************
@@ -159,8 +160,17 @@ public class CarRentalCompany implements Serializable {
     }
 
     /*********
-     * CARS *
+     * CARS * 
      *********/
+    
+    public List<Car> popAllCars() {
+        this.cars = new ArrayList<Car>();
+        return this.cars;
+    }
+    
+    public void addCar(Car car) {
+        this.cars.add(car);
+    }
     
     public Car getCar(int uid) {
         for (Car car : cars) {

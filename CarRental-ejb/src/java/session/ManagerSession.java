@@ -1,6 +1,7 @@
 package session;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -64,6 +65,22 @@ public class ManagerSession implements ManagerSessionRemote {
             return 0;
         }
         return out.size();
+    }
+    
+    @Override
+    public void addCarRentalCompany(String name, List<Car> cars, List<String> regions) {
+        CarRentalCompany company = new CarRentalCompany(name, regions, cars);
+        List<Car> carsToCopy = company.popAllCars();
+        manager.persist(company);
+        CarRentalCompany companyEntry = manager.find(CarRentalCompany.class, company.getName());
+        
+        for (Car car : carsToCopy) {
+            CarType type = manager.find(CarType.class,car.getType().getName());
+            if (type != null) {
+                car.setType(type);
+            }
+            companyEntry.addCar(car);
+        }
     }
 
 }
