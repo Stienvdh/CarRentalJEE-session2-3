@@ -6,6 +6,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import static javax.ejb.TransactionAttributeType.REQUIRED;
 import javax.persistence.*;
 import rental.Car;
 import rental.CarRentalCompany;
@@ -123,6 +125,7 @@ public class ManagerSession implements ManagerSessionRemote {
     
     
     @Override
+    @TransactionAttribute(REQUIRED)
     public void addCarRentalCompany(String name, List<CarType> cars, List<String> regions) {
         List<Car> carsList = new ArrayList<Car>();
         

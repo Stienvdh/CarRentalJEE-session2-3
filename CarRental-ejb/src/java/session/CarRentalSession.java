@@ -6,8 +6,11 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import javax.ejb.EJBException;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateful;
+import javax.ejb.TransactionAttribute;
+import static javax.ejb.TransactionAttributeType.REQUIRED;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import rental.CarRentalCompany;
@@ -92,6 +95,7 @@ public class CarRentalSession implements CarRentalSessionRemote {
     }
 
     @Override
+    @TransactionAttribute(REQUIRED)
     public List<Reservation> confirmQuotes() throws Exception {
         List<Reservation> done = new LinkedList<Reservation>();
         try {
@@ -101,11 +105,7 @@ public class CarRentalSession implements CarRentalSessionRemote {
             }
             
         } catch (Exception e) {
-            for(Reservation r:done){
-                CarRentalCompany crcRollBack = this.manager.find(CarRentalCompany.class, r.getRentalCompany());
-                crcRollBack.cancelReservation(r);                
-            }
-            throw new ReservationException(e);
+            throw new EJBException(e);
         }
         return done;
     }
