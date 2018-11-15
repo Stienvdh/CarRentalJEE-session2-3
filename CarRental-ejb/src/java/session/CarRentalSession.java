@@ -119,22 +119,20 @@ public class CarRentalSession implements CarRentalSessionRemote {
     }
     
     @Override
-    public CarType getCheapestCarType(Date start, Date end, String region) {
+    public String getCheapestCarType(Date start, Date end, String region) {
         List<CarRentalCompany> crc = this.manager.createNamedQuery("getAllRentalCompanies").getResultList();
         CarType result = null;
         for (CarRentalCompany company : crc) {
             if (company.getRegions().contains(region)) {
-                List<CarType> resultList = this.manager.createNamedQuery("getCheapestCarTypeOfCompany")
+                List<CarType> resultList = this.manager.createNamedQuery("getCheapestCarType")
                 .setParameter("start", start)
                 .setParameter("end", end)
                 .setParameter("companyName", company.getName())
                 .getResultList();
-                if (resultList == null)
-                    throw new IllegalStateException("No carTypes");
-                if (result == null || resultList.get(0).getRentalPricePerDay() < result.getRentalPricePerDay())
+                if (resultList.size()>0 && (result == null || resultList.get(0).getRentalPricePerDay()<result.getRentalPricePerDay()))
                     result = resultList.get(0);
             }
         }
-        return result;
+        return result.getName();
     }
 }

@@ -81,8 +81,7 @@ import javax.persistence.*;
 
 @NamedQuery(
     name = "getBestClients",
-    query = "SELECT reservation.carRenter, COUNT(reservation) AS total FROM CarRentalCompany company, Reservation reservation "
-        + "WHERE reservation.rentalCompany = company.name "
+    query = "SELECT reservation.carRenter, COUNT(reservation.id) AS total FROM Reservation reservation "
         + "GROUP BY reservation.carRenter "
         + "ORDER BY total DESC"
 ),
@@ -98,15 +97,15 @@ import javax.persistence.*;
 ),
 
 @NamedQuery(
-     name = "getCheapestCarTypeOfCompany",
-     query = "SELECT carType, MIN(car.type.rentalPricePerDay) AS price FROM CarRentalCompany company, CarType carType, Car car LEFT JOIN Reservation reservation ON (reservation MEMBER OF car.reservations AND reservation.startDate BETWEEN :start AND :end) "
+     name = "getCheapestCarType",
+     query = "SELECT carType FROM CarRentalCompany company, CarType carType, Car car "
         + "WHERE carType MEMBER OF company.carTypes "
         + "AND company.name = :companyName "
         + "AND car.type = carType "
         + "AND car MEMBER OF company.cars "
-        + "AND reservation.id IS NOT NULL "
-        + "GROUP BY carType "
-        + "ORDER BY price ASC"
+        + "AND NOT EXISTS (SELECT reservation FROM Reservation reservation WHERE "
+             + "reservation MEMBER OF car.reservations AND reservation.startDate BETWEEN :start AND :end) "
+        + "ORDER BY carType.rentalPricePerDay ASC"
 )
 })
 

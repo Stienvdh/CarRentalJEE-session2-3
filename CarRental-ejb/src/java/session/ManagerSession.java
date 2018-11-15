@@ -93,7 +93,7 @@ public class ManagerSession implements ManagerSessionRemote {
         Set<String> resultSet = new HashSet<String>();
         long bestValue = (long) resultList.get(0)[1];
         for (Object[] obj : resultList) {
-            if ((long)  resultList.get(0)[1] == bestValue) {
+            if ((long)  obj[1] == bestValue) {
                 resultSet.add((String)obj[0]);
             } 
         }

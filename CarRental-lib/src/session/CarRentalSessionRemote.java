@@ -25,7 +25,7 @@ public interface CarRentalSessionRemote {
     
     public List<Reservation> confirmQuotes() throws Exception;
     
-    public CarType getCheapestCarType(Date start, Date end, String region);
+    public String getCheapestCarType(Date start, Date end, String region);
     
     public void printAvailableCarTypes(Date start, Date end);
 }
