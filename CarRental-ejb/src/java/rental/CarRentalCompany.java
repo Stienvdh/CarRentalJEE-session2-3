@@ -24,6 +24,19 @@ import javax.persistence.*;
     name = "getAllRentalCompanyNames",
     query= "SELECT company.name FROM CarRentalCompany company"
 ),
+
+    
+@NamedQuery(
+    name = "getCarRentalCompany",
+    query= "SELECT company FROM CarRentalCompany company WHERE company.name = :companyName"
+),
+
+@NamedQuery(
+    name = "getCarTypeFromCompany",
+    query= "SELECT carType FROM CarRentalCompany company, CarType carType WHERE company.name = :companyName "
+        + "AND carType MEMBER OF company.carTypes "
+        + "AND carType.name = :type"
+),
     
 @NamedQuery(
     name = "getAllCarTypesOfCompany",
@@ -74,25 +87,27 @@ import javax.persistence.*;
         + "ORDER BY total DESC"
 ),
 
-//@NamedQuery(
-//    name = "getMostPopularCarTypeOfCompany",
-//    query= "SELECT carType, COUNT(carType) AS total FROM Reservation reservation, CarType carType "
-//        + "WHERE reservation.rentalCompany = :companyName "
-//            +"AND carType.companyName = :companyName "
-//            +"AND reservation.getStartDate >= :year+'0101'"
-//            +"AND reservation.getStartDate <= :year+'1231'"
-//        + "GROUP BY carType "
-//        + "ORDER BY total DESC"
-//),
+@NamedQuery(
+    name = "getMostPopularCarTypeOfCompany",
+    query= "SELECT reservation.carType, COUNT(reservation.id) AS total FROM Reservation reservation, CarType cartype "
+        + "WHERE reservation.rentalCompany = :companyName "
+        + "AND reservation.carType = cartype.name "
+        +"AND reservation.startDate BETWEEN :startyear AND :endyear "
+        + "GROUP BY reservation.carType "
+        + "ORDER BY total DESC"
+),
 
-//@NamedQuery(
-//     name = "getCheapestCarType",
-//     query = "SELECT carType, MIN(car.type.rentalPricePerDay) AS price FROM CarRentalCompany company, Car car, CarType carType "
-//        + "WHERE car.isAvailable(:startDate,:endDate) "
-//        + "AND company.regions.contains(:region) "
-//        + "GROUP BY carType "
-//        + "ORDER BY price ASC"
-//)
+@NamedQuery(
+     name = "getCheapestCarTypeOfCompany",
+     query = "SELECT carType, MIN(car.type.rentalPricePerDay) AS price FROM CarRentalCompany company, CarType carType, Car car LEFT JOIN Reservation reservation ON (reservation MEMBER OF car.reservations AND reservation.startDate BETWEEN :start AND :end) "
+        + "WHERE carType MEMBER OF company.carTypes "
+        + "AND company.name = :companyName "
+        + "AND car.type = carType "
+        + "AND car MEMBER OF company.cars "
+        + "AND reservation.id IS NOT NULL "
+        + "GROUP BY carType "
+        + "ORDER BY price ASC"
+)
 })
 
 @Entity
@@ -153,12 +168,16 @@ public class CarRentalCompany implements Serializable {
             if(type.getName().equals(carTypeName))
                 return type;
         }
-        throw new IllegalArgumentException("<" + carTypeName + "> No cartype of name " + carTypeName);
+        throw new IllegalArgumentException("<" + carTypeName + "> No cartype of name " + carTypeName + " is available.");
     }
 
     public boolean isAvailable(String carTypeName, Date start, Date end) {
         logger.log(Level.INFO, "<{0}> Checking availability for car type {1}", new Object[]{name, carTypeName});
-        return getAvailableCarTypes(start, end).contains(getType(carTypeName));
+        for (CarType type : carTypes) {
+            if(type.getName().equals(carTypeName))
+                return getAvailableCarTypes(start, end).contains(type);
+        }
+        return false;
     }
 
     public Set<CarType> getAvailableCarTypes(Date start, Date end) {
@@ -180,8 +199,9 @@ public class CarRentalCompany implements Serializable {
      *********/
     
     public List<Car> popAllCars() {
+        List<Car> carList = this.cars;
         this.cars = new ArrayList<Car>();
-        return this.cars;
+        return carList;
     }
     
     public void addCar(Car car) {

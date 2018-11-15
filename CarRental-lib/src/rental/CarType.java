@@ -6,7 +6,8 @@ import javax.persistence.*;
 @Entity
 public class CarType implements Serializable {
     
-    @Id private String name;
+    @Id private String idString;
+    private String name;
     private int nbOfSeats;
     private boolean smokingAllowed;
     private double rentalPricePerDay;
@@ -25,6 +26,7 @@ public class CarType implements Serializable {
         this.trunkSpace = trunkSpace;
         this.rentalPricePerDay = rentalPricePerDay;
         this.smokingAllowed = smokingAllowed;
+        this.idString = this.toString();
     }
 
     public String getName() {

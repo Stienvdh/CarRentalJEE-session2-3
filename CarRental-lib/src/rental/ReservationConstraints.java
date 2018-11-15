@@ -1,8 +1,9 @@
 package rental;
 
 import java.util.Date;
+import java.io.Serializable;
 
-public class ReservationConstraints {
+public class ReservationConstraints implements Serializable {
     
     private Date startDate;
     private Date endDate;
@@ -13,7 +14,7 @@ public class ReservationConstraints {
     	setStartDate(start);
     	setEndDate(end);
     	setCarType(carType);
-		setRegion(region);
+	setRegion(region);
     }
     
     public Date getStartDate() {

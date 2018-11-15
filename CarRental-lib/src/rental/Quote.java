@@ -8,7 +8,7 @@ import javax.persistence.Id;
 @MappedSuperclass
 public class Quote implements Serializable {
 
-    @Id @GeneratedValue
+    @Id @GeneratedValue(strategy=GenerationType.AUTO) private int id;
     @Temporal(javax.persistence.TemporalType.DATE)
     private Date startDate;
     @Temporal(javax.persistence.TemporalType.DATE)

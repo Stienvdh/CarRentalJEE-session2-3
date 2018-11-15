@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import javax.ejb.SessionContext;
 import javax.ejb.Stateful;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -20,14 +21,15 @@ import rental.ReservationException;
 public class CarRentalSession implements CarRentalSessionRemote {
     
     @PersistenceContext
-    private EntityManager em;
+    private EntityManager manager;
 
     private String renter;
     private List<Quote> quotes = new LinkedList<Quote>();
+    private SessionContext context;
 
     @Override
     public Set<String> getAllRentalCompanies() {
-        List<String> resultList = this.em.createNamedQuery("getAllRentalCompanyNames").getResultList();
+        List<String> resultList = this.manager.createNamedQuery("getAllRentalCompanyNames").getResultList();
         if (resultList == null)
             return new HashSet<String>();
         return new HashSet<String>(resultList);
@@ -35,7 +37,7 @@ public class CarRentalSession implements CarRentalSessionRemote {
     
     @Override
     public List<CarType> getAvailableCarTypes(Date start, Date end) {
-        List<CarRentalCompany> resultList = this.em.createNamedQuery("getAllRentalCompanies").getResultList();
+        List<CarRentalCompany> resultList = this.manager.createNamedQuery("getAllRentalCompanies").getResultList();
         List<CarType> availableCarTypes = new LinkedList<CarType>();
         if(resultList == null) {
             resultList = new ArrayList<CarRentalCompany>();
@@ -48,16 +50,40 @@ public class CarRentalSession implements CarRentalSessionRemote {
         }
         return availableCarTypes;
     }
+    
+    @Override
+    public void printAvailableCarTypes(Date start, Date end) {
+        List<CarRentalCompany> resultList = this.manager.createNamedQuery("getAllRentalCompanies").getResultList();
+        List<CarType> availableCarTypes = new LinkedList<CarType>();
+        if(resultList == null) {
+            resultList = new ArrayList<CarRentalCompany>();
+        }
+        for(CarRentalCompany crc : resultList) {
+            for (CarType ct : crc.getAvailableCarTypes(start, end)){
+                if(!availableCarTypes.contains(ct))
+                    availableCarTypes.add(ct);
+            } 
+        }
+
+        for (CarType type : availableCarTypes) {
+            System.out.println(type.toString());
+        }
+    }
 
     @Override
-    public Quote createQuote(String company, ReservationConstraints constraints) throws ReservationException {
-        CarRentalCompany crc = this.em.find(CarRentalCompany.class, company);
-        if (crc == null) {
-            throw new ReservationException("Company " + company + " doesn't exist.");
+    public Quote createQuote(String region, ReservationConstraints constraints) throws ReservationException {
+        List<CarRentalCompany> companies = this.manager.createNamedQuery("getAllRentalCompanies").getResultList();
+        for (CarRentalCompany company : companies) {
+            try {
+                Quote quote = company.createQuote(constraints, this.renter);
+                this.quotes.add(quote);
+                return quote;
+            }
+            catch (ReservationException exc) {
+            }
         }
-        Quote out = crc.createQuote(constraints, renter);
-        quotes.add(out);
-        return out;
+        throw new ReservationException("No cars available in region " + region + "for dates " + 
+                constraints.getStartDate().toString() + "-" + constraints.getEndDate().toString());
     }
 
     @Override
@@ -66,16 +92,17 @@ public class CarRentalSession implements CarRentalSessionRemote {
     }
 
     @Override
-    public List<Reservation> confirmQuotes() throws ReservationException {
+    public List<Reservation> confirmQuotes() throws Exception {
         List<Reservation> done = new LinkedList<Reservation>();
         try {
             for (Quote quote : quotes) {
-                CarRentalCompany crc = this.em.find(CarRentalCompany.class, quote.getRentalCompany());
+                CarRentalCompany crc = this.manager.find(CarRentalCompany.class, quote.getRentalCompany());
                 done.add(crc.confirmQuote(quote));
             }
+            
         } catch (Exception e) {
             for(Reservation r:done){
-                CarRentalCompany crcRollBack = this.em.find(CarRentalCompany.class, r.getRentalCompany());
+                CarRentalCompany crcRollBack = this.manager.find(CarRentalCompany.class, r.getRentalCompany());
                 crcRollBack.cancelReservation(r);                
             }
             throw new ReservationException(e);
@@ -89,5 +116,25 @@ public class CarRentalSession implements CarRentalSessionRemote {
             throw new IllegalStateException("name already set");
         }
         renter = name;
+    }
+    
+    @Override
+    public CarType getCheapestCarType(Date start, Date end, String region) {
+        List<CarRentalCompany> crc = this.manager.createNamedQuery("getAllRentalCompanies").getResultList();
+        CarType result = null;
+        for (CarRentalCompany company : crc) {
+            if (company.getRegions().contains(region)) {
+                List<CarType> resultList = this.manager.createNamedQuery("getCheapestCarTypeOfCompany")
+                .setParameter("start", start)
+                .setParameter("end", end)
+                .setParameter("companyName", company.getName())
+                .getResultList();
+                if (resultList == null)
+                    throw new IllegalStateException("No carTypes");
+                if (result == null || resultList.get(0).getRentalPricePerDay() < result.getRentalPricePerDay())
+                    result = resultList.get(0);
+            }
+        }
+        return result;
     }
 }

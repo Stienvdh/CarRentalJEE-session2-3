@@ -18,7 +18,7 @@ public interface ManagerSessionRemote {
     
     public int getNumberOfReservations(String company, String type);
     
-    public void addCarRentalCompany(String name, List<Object[]> cars, List<String> regions);
+    public void addCarRentalCompany(String name, List<CarType> cars, List<String> regions);
     
     public void setCrcName(String name);
     
@@ -26,6 +26,7 @@ public interface ManagerSessionRemote {
     
     public Set<String> getBestClients();
     
-    public CarType getMostPopularCarTypeOfCompany(String company, String year);
-      
+    public CarType getMostPopularCarTypeOfCompany(String company, int year);
+    
+    public String getCrcName();
 }

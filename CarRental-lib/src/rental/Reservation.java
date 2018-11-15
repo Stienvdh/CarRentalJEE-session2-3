@@ -9,7 +9,7 @@ public class Reservation extends Quote implements Serializable {
     @PersistenceContext
     EntityManager em;
 
-    @Id private int carId;
+    private int carId;
     
     /***************
      * CONSTRUCTOR *

@@ -9,7 +9,9 @@ import javax.persistence.*;
 @Entity
 public class Car implements Serializable {
 
-    @Id private int id;
+    @Id
+    @GeneratedValue(strategy=GenerationType.AUTO)
+    private int id;
     @ManyToOne(cascade=CascadeType.ALL) private CarType type;
     @OneToMany(cascade=CascadeType.ALL) private Set<Reservation> reservations;
 
@@ -19,8 +21,7 @@ public class Car implements Serializable {
     
     public Car(){};
     
-    public Car(int uid, CarType type) {
-    	this.id = uid;
+    public Car(CarType type) {
         this.type = type;
         this.reservations = new HashSet<Reservation>();
     }

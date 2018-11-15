@@ -1,5 +1,6 @@
 package session;
 
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -20,6 +21,11 @@ public class ManagerSession implements ManagerSessionRemote {
     
     private String managerName;
     private String crcName;
+    
+    @Override 
+    public String getCrcName() {
+        return this.crcName;
+    }
     
     @Override
     public void setManagerName(String name) {
@@ -85,9 +91,9 @@ public class ManagerSession implements ManagerSessionRemote {
         if (resultList == null)
             return new HashSet<String>();
         Set<String> resultSet = new HashSet<String>();
-        int bestValue = (Integer) resultList.get(0)[1];
+        long bestValue = (long) resultList.get(0)[1];
         for (Object[] obj : resultList) {
-            if ((Integer)  resultList.get(0)[1] == bestValue) {
+            if ((long)  resultList.get(0)[1] == bestValue) {
                 resultSet.add((String)obj[0]);
             } 
         }
@@ -95,48 +101,49 @@ public class ManagerSession implements ManagerSessionRemote {
     }
     
     @Override
-    public CarType getMostPopularCarTypeOfCompany(String company, String year) {
-        List<CarType> resultList = this.manager.createNamedQuery("getMostPopularCarTypeOfCompany")
+    public CarType getMostPopularCarTypeOfCompany(String company, int year) {
+        List<Object[]> resultList = this.manager.createNamedQuery("getMostPopularCarTypeOfCompany")
                 .setParameter("companyName", company)
-                .setParameter("year", year)
+                .setParameter("startyear", Date.valueOf(year + "-01-01" ))
+                .setParameter("endyear", Date.valueOf(year + "-12-31" ))
                 .getResultList();
         if (resultList == null)
             throw new IllegalStateException("No carTypes at company " + company);
-        return resultList.get(0);
+        String result = (String) (resultList.get(0))[0];
+        CarRentalCompany crc = (CarRentalCompany) this.manager.createNamedQuery("getCarRentalCompany")
+                .setParameter("companyName", company)
+                .getResultList().get(0);
+        CarType type = (CarType) this.manager.createNamedQuery("getCarTypeFromCompany")
+                .setParameter("type", result)
+                .setParameter("companyName", company)
+                .getResultList().get(0);
+        return type;
     }
     
-    public CarType getCheapestCarType(ReservationConstraints constraints) {
-        List<CarType> resultList = this.manager.createNamedQuery("getCheapestCarType")
-                .setParameter("startDate", constraints.getStartDate())
-                .setParameter("endDate", constraints.getEndDate())
-                .setParameter("region", constraints.getRegion())
-                .getResultList();
-        if (resultList == null)
-            throw new IllegalStateException("No carTypes");
-        return resultList.get(0);
-    }
+    
     
     @Override
-    public void addCarRentalCompany(String name, List<Object[]> cars, List<String> regions) {
+    public void addCarRentalCompany(String name, List<CarType> cars, List<String> regions) {
         List<Car> carsList = new ArrayList<Car>();
         
-        for (Object[] arr : cars) {
-            Car newCar = new Car((Integer)arr[0],(CarType)arr[1]);
-            carsList.add(newCar);
+        for (CarType car : cars) {
+            carsList.add(new Car(car));
         }
-        
+
         CarRentalCompany company = new CarRentalCompany(name, regions, carsList);
         List<Car> carsToCopy = company.popAllCars();
         manager.persist(company);
         CarRentalCompany companyEntry = manager.find(CarRentalCompany.class, company.getName());
         
         for (Car car : carsToCopy) {
-            CarType type = manager.find(CarType.class,car.getType().getName());
+            CarType type = manager.find(CarType.class, car.getType().toString());
             if (type != null) {
+                companyEntry.addCarType(type);
                 car.setType(type);
             }
             else {
-                company.addCarType(type);
+                companyEntry.addCarType(car.getType());
+                car.setType(car.getType());
             }
             companyEntry.addCar(car);
         }
