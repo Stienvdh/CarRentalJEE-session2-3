@@ -151,5 +151,26 @@ public class ManagerSession implements ManagerSessionRemote {
             companyEntry.addCar(car);
         }
     }
+    
+    @Override 
+    public void addCar(CarType typecar) {
+        Car car = new Car(typecar);
+        CarRentalCompany companyEntry = manager.find(CarRentalCompany.class, this.getCrcName());
+        CarType type = manager.find(CarType.class, car.getType().toString());
+            if (type != null) {
+                companyEntry.addCarType(type);
+                car.setType(type);
+            }
+        companyEntry.addCar(car);
+    }
+    
+    @Override
+    public void addCarType(CarType carType) {
+        CarRentalCompany companyEntry = manager.find(CarRentalCompany.class, this.getCrcName());
+        CarType type = manager.find(CarType.class, carType.toString());
+            if (type != null) {
+                companyEntry.addCarType(type);
+            }
+    }
 
 }
